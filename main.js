@@ -10,7 +10,7 @@ Core : ゲーム本体
 
 window.onload = function(){
 
-	var GAMEN_WIDTH = 960;
+	var GAMEN_WIDTH = 720;
 	var GAMEN_HEIGHT = 960;
 
 	var core = new Core(GAMEN_WIDTH,GAMEN_HEIGHT);
@@ -36,8 +36,8 @@ window.onload = function(){
 			if (core.input.right) this.x += 5;
 			if (core.input.up) this.y -= 5;
 			if (core.input.down) this.y += 5;
-			if(this.x > 960) this.x = 0;
-			if(this.y > 960) this.y = 0;
+			if(this.x > GAMEN_WIDTH) this.x = 0;
+			if(this.y > GAMEN_HEIGHT) this.y = 0;
 		});
 		
 		//竹基本クラス
@@ -83,12 +83,12 @@ window.onload = function(){
 		var iMax = 0
 		
 		for (var i = 0; i <= iMax; i++){
-			takes[i] = new Take(500, GAMEN_WIDTH - (i * 125),3);
+			takes[i] = new Take(500, GAMEN_HEIGHT - (i * 125),3);
 			
 			if (i == iMax){
-				takes[iMax + 1] = new Take(500, GAMEN_WIDTH - (i * 125) -125,2);
-				takes[iMax + 2] = new Take(500, GAMEN_WIDTH - (i * 125) -250,1);
-				takes[iMax + 3] = new Take(500, GAMEN_WIDTH - (i * 125) -375,0);
+				takes[iMax + 1] = new Take(500, GAMEN_HEIGHT - (i * 125) -125,2);
+				takes[iMax + 2] = new Take(500, GAMEN_HEIGHT - (i * 125) -250,1);
+				takes[iMax + 3] = new Take(500, GAMEN_HEIGHT - (i * 125) -375,0);
 			}
 		}
 
