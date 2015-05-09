@@ -139,7 +139,8 @@ window.onload = function(){
 		core.rootScene.addChild(take);
 
 	}
-	core.start();
+	//core.start();
+	core.debug();
 
 };
 
