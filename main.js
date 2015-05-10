@@ -12,6 +12,13 @@ window.onload = function(){
 
 	var GAMEN_WIDTH = 720;
 	var GAMEN_HEIGHT = 960;
+	var j_flag = false; //ジャンプフラグ
+	var j_frame = 0;	//ジャンプ処理フレーム数
+	var j_frameMax = 6;	//ジャンプ処理フレーム最大
+	var j_pix = 0;		//ジャンプ実移動量
+	
+	var jumpForce = 1;//ジャンプ力
+	var downForce = 10;	//重力
 
 	var core = new Core(GAMEN_WIDTH,GAMEN_HEIGHT);
 	core.preload('panda1.png');
@@ -25,17 +32,28 @@ window.onload = function(){
 				
 		var panda = new Sprite(68,68);
 		panda.image = core.assets['panda1.png'];
-		panda.x = 0
+		panda.x = 0;
 		panda.y = 100;
 		panda.frame = 1;
 		
 		panda.addEventListener('enterframe',function(){	
+			//加速度計算
+			if (j_flag == true) {
+				if (j_frame == j_frameMax){
+					j_flag = false;
+					j_pix = 0;
+				}else{
+					j_pix -= jumpForce * (j_frameMax - j_frame) * (j_frameMax - j_frame);
+				}
+				j_frame += 1;
+				this.y += j_pix;
+			};
+			
+			//パンダ位置
 			this.x = 100;
-			this.y += 10; 	
-			if (core.input.left) this.x -= 5;
-			if (core.input.right) this.x += 5;
-			if (core.input.up) this.y -= 5;
-			if (core.input.down) this.y += 5;
+			this.y += downForce; 	
+
+			//画面外制御
 			if(this.x > GAMEN_WIDTH) this.x = 0;
 			if(this.y > GAMEN_HEIGHT) this.y = 0;
 		});
@@ -52,7 +70,7 @@ window.onload = function(){
 			},
 			onenterframe:function(){				//enterframe時のイベントリスナー
 				this.x -= 10;
-				if (this.x < 0) this.x = GAMEN_WIDTH;
+				if (this.x < -250) this.x = GAMEN_WIDTH;
 				if (this.within(panda,100)){
 					lblStatus.text = 'HIT';	
 				}
@@ -71,7 +89,7 @@ window.onload = function(){
 			},
 			onenterframe:function(){				//enterframe時のイベントリスナー
 				this.x -= 10;
-				if (this.x < 0) this.x = GAMEN_WIDTH;
+				if (this.x < -250) this.x = GAMEN_WIDTH;
 				if (this.within(panda,100)){
 					lblStatus.text = 'HIT';	
 				}
@@ -104,19 +122,15 @@ window.onload = function(){
 			}
 		}
 		
-//		take.addEventListener('enterframe',function(){
-//			for (var i = 0; i <= 12; i++){
-//				takes[i].x += 1;
-//			}
-//		});
-		
+		//パンダジャンプ
 		core.rootScene.addEventListener('touchstart',function(){		
-			panda.y -= 70;
+			j_flag = true;
+			j_frame = 0;
 		});
-
+		
 		//ラベルの操作。
 		var lblScore = new Label();
-		lblScore.x = 890;
+		lblScore.x = GAMEN_WIDTH - 100;
 		lblScore.y = 5;
 		lblScore.color = 'red';
 		lblScore.font = '24px "Arial"';
@@ -126,7 +140,7 @@ window.onload = function(){
 		});
 		
 		var lblStatus = new Label();
-		lblStatus.x = 890;
+		lblStatus.x = GAMEN_WIDTH - 100;
 		lblStatus.y = 30;
 		lblStatus.color = 'red';
 		lblStatus.font = '24px "Arial"';
