@@ -1,4 +1,4 @@
-enchant();
+enchant('draw');
 
 /*
 Core : ゲーム本体
@@ -18,6 +18,7 @@ window.onload = function(){
 	TAKE_MOVE = 10;		//竹の早さ
 	TAKE_PATT = 32;		//竹のパターン数
 	TAKE_HOLE = 250;	//竹の隙間
+	TAKE_PRAC = 2;		//竹のチュートリアル数
 	SCORE_FREQ = 1;		//スコア加点量
 
 	game = new Game(GAMEN_WIDTH,GAMEN_HEIGHT);
@@ -29,6 +30,28 @@ window.onload = function(){
 		//背景
 		var scene = game.rootScene;
 		scene.backgroundColor = '#7CC28E';
+		
+		//現在のスコア表示
+		txtNowScr = new MutableText(GAMEN_WIDTH/2 + 50,200,game.width,"0");
+		txtNowScr.scale(4,4);
+		
+		//ゲームオーバーシーン
+		createGameoverScene = function () {
+			var scene = new Scene();
+			var txtRestart = new Text(GAMEN_WIDTH/2 - 120,GAMEN_HEIGHT/2 - 30,"TOUCH TO RESTART");
+			txtRestart.scale(2,2);
+			var txtScore = new Text(GAMEN_WIDTH/2 - 50,GAMEN_HEIGHT/2 - 90, "SCORE:" + game.score);
+			txtScore.scale(3,3);
+			
+			scene.addChild(txtRestart);
+			scene.addChild(txtScore);
+			txtRestart.addEventListener(Event.TOUCH_START,function(e){
+				//ページのリロード
+				window.location.reload();
+			});
+			
+			return scene;
+		};
 		
 		//パンダ表示		
 		panda = new Sprite(68,68);
@@ -49,17 +72,28 @@ window.onload = function(){
 
 			//画面外制御
 			if(this.x > GAMEN_WIDTH) this.x = 0;
+			if(this.y < - 200) this.y = - 200;
 			if(this.y > GAMEN_HEIGHT) this.y = GAMEN_HEIGHT - 75;
 		});
 		
 		game.rootScene.addEventListener('enterframe',function(){		
             // フレームごとに竹を増やす関数を実行
 			if(game.frame % TAKE_FREQ == 0){
-				if (TAKE_FLG) addTake(rand(TAKE_PATT));
+					//最初は簡単
+				if (game.score < TAKE_PRAC) {
+					if (game.score == 0) {addTake(rand(TAKE_PATT),70);}
+					else if (game.score == 1) {addTake(rand(TAKE_PATT),50);}
+					else if (game.score == 2) {addTake(rand(TAKE_PATT),30);}
+					else {addTake(rand(TAKE_PATT),100);}
+				}else{
+					//3回目以降完全ランダム
+					if (TAKE_FLG) addTake(rand(TAKE_PATT),0);
+				}
             }
             //点数追加
             if(game.frame % TAKE_FREQ == 0){
 				game.score += SCORE_FREQ;
+				txtNowScr.text = "" + game.score;
 			}
 		});
 		
@@ -83,7 +117,7 @@ window.onload = function(){
 				this.x -= 10;
 				if (this.x < -1000) this.x = GAMEN_WIDTH;
 				if (this.within(panda,100)){
-					lblStatus.text = 'HIT';	
+					//lblStatus.text = 'HIT';	
 				}
 			}
 		});
@@ -91,28 +125,9 @@ window.onload = function(){
 		var hara
 		hara = new Hara(0,950,0);
 		hara = new Hara(1000,950,0);
-		
-		//ラベルの操作。
-		var lblScore = new Label();
-		lblScore.x = GAMEN_WIDTH - 100;
-		lblScore.y = 5;
-		lblScore.color = 'red';
-		lblScore.font = '24px "Arial"';
-		lblScore.text = '0'
-		lblScore.addEventListener('enterframe',function(){
-			lblScore.text = game.score;
-		});
-		
-		lblStatus = new Label();
-		lblStatus.x = GAMEN_WIDTH - 100;
-		lblStatus.y = 30;
-		lblStatus.color = 'red';
-		lblStatus.font = '24px "Arial"';
-		lblStatus.text = '';
 
 		//rootSceneに追加。
-		game.rootScene.addChild(lblScore);
-		game.rootScene.addChild(lblStatus);
+		game.rootScene.addChild(txtNowScr);
 		game.rootScene.addChild(panda);
 
 	}
@@ -121,13 +136,13 @@ window.onload = function(){
 
 };
 
-//引数num番目を開け、竹を生成する関数
-function addTake(num){
+//引数num番目に高さslit分開け、竹を生成する関数
+function addTake(num,slit){
 	num += 1;
 
 	var takeOver = new Sprite(220, 1000);
 	takeOver.x = 1000;
-	takeOver.y = 200 + (GAMEN_HEIGHT - (TAKE_HOLE)) * num / TAKE_PATT;
+	takeOver.y = slit + 200 + (GAMEN_HEIGHT - (TAKE_HOLE)) * num / TAKE_PATT;
 	takeOver.image = game.assets['take1.png'];
 	
 	takeOver.addEventListener('enterframe', function(e){
@@ -139,7 +154,7 @@ function addTake(num){
 	
 	var takeUnder = new Sprite(220, 1000);
 	takeUnder.x = 1000;
-	takeUnder.y = -1000 + (GAMEN_HEIGHT - (TAKE_HOLE)) * num / TAKE_PATT ;
+	takeUnder.y = -slit -1000 + (GAMEN_HEIGHT - (TAKE_HOLE)) * num / TAKE_PATT ;
 	takeUnder.image = game.assets['take2.png'];
 	
 	takeUnder.addEventListener('enterframe', function(e){
@@ -160,6 +175,8 @@ function gameEnd(){
 	//PANDA_GRAV = 0;
 	PANDA_JUMP = 0;
 	TAKE_FLG = false;
+	txtNowScr.text = "";
+	game.pushScene(createGameoverScene());
 }
 
 // 引数 num を受け取って、0 から (num - 1) までの乱数を返す関数
