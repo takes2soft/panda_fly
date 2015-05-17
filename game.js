@@ -14,17 +14,17 @@ window.onload = function(){
 	PANDA_GRAV = 5;		//パンダの重力
 	PANDA_JUMP = 30;	//パンダのジャンプ力
 	TAKE_FLG = true;	//竹を出すフラグ
-	TAKE_FREQ = 60;		//竹の出現頻度
+	TAKE_FREQ = 45;		//竹の出現頻度
 	TAKE_MOVE = 10;		//竹の早さ
 	TAKE_PATT = 32;		//竹のパターン数
 	TAKE_HOLE = 250;	//竹の隙間
-	TAKE_PRAC = 2;		//竹のチュートリアル数
+	TAKE_PRAC = 1;		//竹のチュートリアル数
 	SCORE_FREQ = 1;		//スコア加点量
 	SCORE_FLG = true;	//スコア加点フラグ
 	SCORE_VIEW = true;	//スコア表示フラグ
 
 	game = new Game(GAMEN_WIDTH,GAMEN_HEIGHT);
-	game.preload(['panda1.png','take1.png','take2.png','yuka.png','blank.png']);
+	game.preload(['panda.png','take1.png','take2.png','yuka.png','blank.png']);
 	game.fps = 24;
 	game.score = 0;
 	
@@ -53,11 +53,11 @@ window.onload = function(){
 		};
 		
 		//パンダ表示		
-		panda = new Sprite(68,68);
-		panda.image = game.assets['panda1.png'];
+		panda = new Sprite(68,65);
+		panda.image = game.assets['panda.png'];
 		panda.x = 0;
 		panda.y = 100;
-		panda.frame = 1;
+		panda.frame = 0;
 		panda.vy = 0;
 		panda.jumping = false;
 		
@@ -73,6 +73,13 @@ window.onload = function(){
 			if(this.x > GAMEN_WIDTH) this.x = 0;
 			if(this.y < - 200) this.y = - 200;
 			if(this.y > GAMEN_HEIGHT) this.y = GAMEN_HEIGHT - 75;
+			
+			//パンダ画像
+			if (this.vy < 10){
+				panda.frame = 1;
+			}else{
+				panda.frame = 0;
+			} 
 		});
 		
 		game.rootScene.addEventListener('enterframe',function(){		
@@ -80,10 +87,9 @@ window.onload = function(){
 			if(game.frame % TAKE_FREQ == 0){
 					//最初は簡単
 				if (game.score < TAKE_PRAC) {
-					if (game.score == 0) {addTake(rand(TAKE_PATT),70);}
-					else if (game.score == 1) {addTake(rand(TAKE_PATT),50);}
-					else if (game.score == 2) {addTake(rand(TAKE_PATT),30);}
-					else {addTake(rand(TAKE_PATT),100);}
+					if (game.score < 1) {addTake(rand(TAKE_PATT),50);}
+					else if (game.score < 2) {addTake(rand(TAKE_PATT),20);}
+					else {addTake(rand(TAKE_PATT),50);}
 				}else{
 					//3回目以降完全ランダム
 					if (TAKE_FLG) addTake(rand(TAKE_PATT),0);
@@ -131,8 +137,9 @@ window.onload = function(){
 		hara = new Hara(1000,950,0);
 
 		//rootSceneに追加。
-		game.rootScene.addChild(txtNowScr);
 		game.rootScene.addChild(panda);
+		game.rootScene.addChild(txtNowScr);
+
 
 	}
 	game.start();
@@ -145,7 +152,7 @@ function addTake(num,slit){
 	num += 1;
 
 	//当たり判定
-	var takeAtari = new Sprite(80, GAMEN_HEIGHT * 3);
+	var takeAtari = new Sprite(50, GAMEN_HEIGHT * 3);
 	takeAtari.x = 1000;
 	takeAtari.y = - GAMEN_HEIGHT;
 	takeAtari.image = game.assets['blank.png'];
@@ -184,9 +191,10 @@ function addTake(num,slit){
 	});
 	
 	game.rootScene.addChild(takeAtari);
-	game.rootScene.addChild(takeOver);
-	game.rootScene.addChild(takeUnder);
-
+	//game.rootScene.addChild(takeOver);
+	//game.rootScene.addChild(takeUnder);
+	game.rootScene.insertBefore(takeOver,panda);
+	game.rootScene.insertBefore(takeUnder,panda);
 }
 
 function gameEnd(){
