@@ -20,11 +20,13 @@ window.onload = function(){
 	TAKE_HOLE = 250;	//竹の隙間
 	TAKE_PRAC = 2;		//竹のチュートリアル数
 	SCORE_FREQ = 1;		//スコア加点量
+	SCORE_FLG = true;	//スコア加点フラグ
+	SCORE_VIEW = true;	//スコア表示フラグ
 
 	game = new Game(GAMEN_WIDTH,GAMEN_HEIGHT);
-	game.preload(['panda1.png','take1.png','take2.png','yuka.png']);
+	game.preload(['panda1.png','take1.png','take2.png','yuka.png','blank.png']);
 	game.fps = 24;
-	game.score = -1;
+	game.score = 0;
 	
 	game.onload = function(){
 		//背景
@@ -32,25 +34,22 @@ window.onload = function(){
 		scene.backgroundColor = '#7CC28E';
 		
 		//現在のスコア表示
-		txtNowScr = new MutableText(GAMEN_WIDTH/2 + 50,200,game.width,"0");
-		txtNowScr.scale(4,4);
+		txtNowScr = new MutableText(GAMEN_WIDTH - 50,50,game.width,"0");
+		txtNowScr.scale(2,2);
 		
 		//ゲームオーバーシーン
 		createGameoverScene = function () {
-			var scene = new Scene();
 			var txtRestart = new Text(GAMEN_WIDTH/2 - 120,GAMEN_HEIGHT/2 - 30,"TOUCH TO RESTART");
 			txtRestart.scale(2,2);
 			var txtScore = new Text(GAMEN_WIDTH/2 - 50,GAMEN_HEIGHT/2 - 90, "SCORE:" + game.score);
 			txtScore.scale(3,3);
 			
-			scene.addChild(txtRestart);
-			scene.addChild(txtScore);
+			game.rootScene.addChild(txtRestart);
+			game.rootScene.addChild(txtScore);
 			txtRestart.addEventListener(Event.TOUCH_START,function(e){
 				//ページのリロード
 				window.location.reload();
 			});
-			
-			return scene;
 		};
 		
 		//パンダ表示		
@@ -92,8 +91,13 @@ window.onload = function(){
             }
             //点数追加
             if(game.frame % TAKE_FREQ == 0){
-				game.score += SCORE_FREQ;
-				txtNowScr.text = "" + game.score;
+				//game.score += SCORE_FREQ;
+				SCORE_FLG = true;
+				if(SCORE_VIEW){
+					txtNowScr.text = "" + game.score;
+				}else{
+					txtNowScr.text = "";
+				}
 			}
 		});
 		
@@ -140,6 +144,21 @@ window.onload = function(){
 function addTake(num,slit){
 	num += 1;
 
+	//当たり判定
+	var takeAtari = new Sprite(80, GAMEN_HEIGHT * 3);
+	takeAtari.x = 1000;
+	takeAtari.y = - GAMEN_HEIGHT;
+	takeAtari.image = game.assets['blank.png'];
+
+	takeAtari.addEventListener('enterframe', function(e){
+		this.x -= TAKE_MOVE;
+		if(this.intersect(panda)){
+			if(SCORE_FLG)game.score += SCORE_FREQ;
+			if(SCORE_VIEW)txtNowScr.text = "" + game.score;
+			SCORE_FLG = false
+		}
+	});
+
 	var takeOver = new Sprite(220, 1000);
 	takeOver.x = 1000;
 	takeOver.y = slit + 200 + (GAMEN_HEIGHT - (TAKE_HOLE)) * num / TAKE_PATT;
@@ -148,7 +167,7 @@ function addTake(num,slit){
 	takeOver.addEventListener('enterframe', function(e){
 		this.x -= TAKE_MOVE;
 		if(this.intersect(panda)){
-			gameEnd();
+			if (takeAtari.intersect(panda))gameEnd();			
 		}
 	});
 	
@@ -160,10 +179,11 @@ function addTake(num,slit){
 	takeUnder.addEventListener('enterframe', function(e){
 		this.x -= TAKE_MOVE;
 		if (this.intersect(panda)){
-			gameEnd();
+			if (takeAtari.intersect(panda))gameEnd();	
 		}
 	});
 	
+	game.rootScene.addChild(takeAtari);
 	game.rootScene.addChild(takeOver);
 	game.rootScene.addChild(takeUnder);
 
@@ -175,8 +195,9 @@ function gameEnd(){
 	//PANDA_GRAV = 0;
 	PANDA_JUMP = 0;
 	TAKE_FLG = false;
+	SCORE_VIEW = false;
 	txtNowScr.text = "";
-	game.pushScene(createGameoverScene());
+	createGameoverScene();
 }
 
 // 引数 num を受け取って、0 から (num - 1) までの乱数を返す関数
