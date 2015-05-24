@@ -200,7 +200,6 @@ function addTake(num,slit){
 function gameEnd(){
 	TAKE_MOVE = 0;
 	SCORE_FREQ = 0;
-	//PANDA_GRAV = 0;
 	PANDA_JUMP = 0;
 	TAKE_FLG = false;
 	SCORE_VIEW = false;
